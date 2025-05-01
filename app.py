@@ -1,94 +1,78 @@
-from flask import Flask, render_template, request, redirect, jsonify
+from flask import Flask, render_template, request, redirect, send_file
 import mysql.connector
-from datetime import datetime
+import csv
+import io
+from config import MYSQL_CONFIG  # ✅ Import della configurazione DB
 
 app = Flask(__name__)
 
-# Configurazione DB
+# Connessione al database usando config.py
 conn = mysql.connector.connect(
-    host="localhost",
-    user="tuo_utente",
-    password="tua_password",
-    database="tuo_database"
+    host=MYSQL_CONFIG['host'],
+    user=MYSQL_CONFIG['user'],
+    password=MYSQL_CONFIG['password'],
+    database=MYSQL_CONFIG['database']
 )
 
-@app.route("/")
+@app.route('/')
 def index():
-    return render_template("index.html")
+    return render_template('index.html')
 
-@app.route("/submit", methods=["POST"])
+@app.route('/submit', methods=['POST'])
 def submit():
-    form = request.form
+    data_richiesta = request.form['data_richiesta']
+    numero_ticket = request.form['numero_ticket']
+    data_esecuzione = request.form['data_esecuzione']
+    ore = request.form['ore']
+    minuti = request.form['minuti']
+    email_tecnico = request.form['email_tecnico']
+    email_cliente = request.form['email_cliente']
+
     cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO ticket_entries (data_richiesta, numero_ticket, data_esecuzione, ore, minuti, email_tecnico, email_cliente)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
-    """, (form['data_richiesta'], form['numero_ticket'], form['data_esecuzione'], form['ore'], form['minuti'], form['email_tecnico'], form['email_cliente']))
+    sql = """
+        INSERT INTO ticket (
+            data_richiesta, numero_ticket, data_esecuzione,
+            ore, minuti, email_tecnico, email_cliente
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+    """
+    cursor.execute(sql, (data_richiesta, numero_ticket, data_esecuzione, ore, minuti, email_tecnico, email_cliente))
     conn.commit()
     cursor.close()
-    return "<div class='alert alert-success'>Salvato correttamente!</div>"
 
-@app.route("/visualizza")
+    return redirect('/visualizza')
+
+@app.route('/visualizza')
 def visualizza():
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM ticket_entries ORDER BY id DESC")
-    dati = cursor.fetchall()
+    cursor.execute("SELECT * FROM ticket")
+    tickets = cursor.fetchall()
     cursor.close()
-    return render_template("visualizza.html", dati=dati)
+    return render_template('visualizza.html', tickets=tickets)
 
-@app.route("/edit/<int:id>")
-def edit(id):
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM ticket_entries WHERE id=%s", (id,))
-    record = cursor.fetchone()
-    cursor.close()
-    return render_template("modals.html", record=record)
-
-@app.route("/update/<int:id>", methods=["POST"])
-def update(id):
-    form = request.form
-    cursor = conn.cursor()
-    cursor.execute("""
-        UPDATE ticket_entries SET data_richiesta=%s, numero_ticket=%s, data_esecuzione=%s, ore=%s, minuti=%s, email_tecnico=%s, email_cliente=%s
-        WHERE id=%s
-    """, (form['data_richiesta'], form['numero_ticket'], form['data_esecuzione'], form['ore'], form['minuti'], form['email_tecnico'], form['email_cliente'], id))
-    conn.commit()
-    cursor.close()
-    return "<div class='alert alert-success'>Modifica completata!</div>"
-
-@app.route("/delete/<int:id>", methods=["POST"])
-def delete(id):
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM ticket_entries WHERE id=%s", (id,))
-    conn.commit()
-    cursor.close()
-    return "<div class='alert alert-danger'>Record eliminato!</div>"
-
-@app.route("/export/csv")
+@app.route('/export_csv')
 def export_csv():
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM ticket_entries ORDER BY id DESC")
-    records = cursor.fetchall()
+    cursor.execute("SELECT * FROM ticket")
+    tickets = cursor.fetchall()
     cursor.close()
 
-    si = []
-    headers = ["ID", "Data Richiesta", "Numero Ticket", "Data Esecuzione", "Ore", "Minuti", "Email Tecnico", "Email Cliente"]
-    si.append(",".join(headers))
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['ID', 'Data Richiesta', 'Numero Ticket', 'Data Esecuzione', 'Ore', 'Minuti', 'Email Tecnico', 'Email Cliente'])
+    for ticket in tickets:
+        writer.writerow([
+            ticket['id'], ticket['data_richiesta'], ticket['numero_ticket'],
+            ticket['data_esecuzione'], ticket['ore'], ticket['minuti'],
+            ticket['email_tecnico'], ticket['email_cliente']
+        ])
 
-    for row in records:
-        si.append(",".join(str(row[col]) for col in ['id', 'data_richiesta', 'numero_ticket', 'data_esecuzione', 'ore', 'minuti', 'email_tecnico', 'email_cliente']))
-
-    csv_content = "\n".join(si)
-    now = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-    return (
-        csv_content,
-        200,
-        {
-            "Content-Type": "text/csv",
-            "Content-Disposition": f"attachment; filename=ticket_export_{now}.csv"
-        }
+    output.seek(0)
+    return send_file(
+        io.BytesIO(output.getvalue().encode()),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name='tickets.csv'
     )
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True)

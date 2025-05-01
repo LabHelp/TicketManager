@@ -1,8 +1,10 @@
 /flask-htmx-app/
 │
 ├── app.py               # Applicazione Flask
+├── config.py            # Configurazione DB e segreti
 ├── requirements.txt     # Dipendenze Python
 ├── schema.sql           # Script MySQL per creazione tabella
+├── README.md            # Guida all'installazione e utilizzo
 │
 ├── /templates/          # File HTML con HTMX + Bootstrap
 │   ├── base.html

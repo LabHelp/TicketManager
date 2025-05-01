@@ -1,0 +1,33 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# IDE/editor files
+.vscode/
+*.code-workspace
+
+# Mac and Windows OS files
+.DS_Store
+Thumbs.db
+
+# Database credentials (separare in un file non tracciato)
+config.py
+
+# Log and debug files
+*.log
+
+# Environment variables
+.env
+
+# CSV esportati dinamicamente
+*.csv
+
+# Backup o file temporanei
+*~
+*.bak
