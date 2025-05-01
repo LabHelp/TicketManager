@@ -1,0 +1,63 @@
+<div class="modal" tabindex="-1" id="editModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Modifica Ticket</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editForm">
+            <input type="hidden" name="id" id="edit-id">
+  
+            <div class="mb-3">
+              <label for="edit-data_richiesta" class="form-label">Data Richiesta</label>
+              <input type="date" class="form-control" id="edit-data_richiesta" name="data_richiesta">
+            </div>
+  
+            <div class="mb-3">
+              <label for="edit-numero_ticket" class="form-label">Numero Ticket</label>
+              <input type="text" class="form-control" id="edit-numero_ticket" name="numero_ticket">
+            </div>
+  
+            <div class="mb-3">
+              <label for="edit-data_esecuzione" class="form-label">Data Esecuzione</label>
+              <input type="date" class="form-control" id="edit-data_esecuzione" name="data_esecuzione">
+            </div>
+  
+            <div class="mb-3">
+              <label for="edit-ore" class="form-label">Ore</label>
+              <select class="form-select" id="edit-ore" name="ore">
+                {% for i in range(1, 21) %}
+                <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+              </select>
+            </div>
+  
+            <div class="mb-3">
+              <label for="edit-minuti" class="form-label">Minuti</label>
+              <select class="form-select" id="edit-minuti" name="minuti">
+                <option value="0">00</option>
+                <option value="15">15</option>
+                <option value="30">30</option>
+                <option value="45">45</option>
+              </select>
+            </div>
+  
+            <div class="mb-3">
+              <label for="edit-email_tecnico" class="form-label">Email Tecnico</label>
+              <input type="email" class="form-control" id="edit-email_tecnico" name="email_tecnico">
+            </div>
+  
+            <div class="mb-3">
+              <label for="edit-email_cliente" class="form-label">Email Cliente</label>
+              <input type="email" class="form-control" id="edit-email_cliente" name="email_cliente">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+          <button type="submit" class="btn btn-primary" form="editForm">Salva Modifiche</button>
+        </div>
+      </div>
+    </div>
+  </div>

@@ -1,0 +1,14 @@
+/flask-htmx-app/
+│
+├── app.py               # Applicazione Flask
+├── requirements.txt     # Dipendenze Python
+├── schema.sql           # Script MySQL per creazione tabella
+│
+├── /templates/          # File HTML con HTMX + Bootstrap
+│   ├── base.html
+│   ├── index.html
+│   ├── visualizza.html  # Pagina di visualizzazione
+│   └── modals.html
+│
+├── /static/
+│   └── style.css        # Stile personalizzato
